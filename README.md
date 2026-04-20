@@ -53,8 +53,13 @@ MCP Exposure (Claude, local agents)
 - **Language**: Python 3.11+
 - **Models**: Pydantic (types), NetworkX (graphs), ChromaDB (vectors)
 - **Configuration**: YAML
-- **APIs**: Anthropic SDK, Model Context Protocol
+- **APIs**: Anthropic SDK, Moonshot AI (Kimi), OpenAI-compatible, Model Context Protocol
 - **Storage**: SQLite (telemetry), local files (vault)
+
+## Integrations
+
+- **Claude Desktop**: MCP server (`CLAUDE_DESKTOP_SETUP.md`)
+- **Kimi CLI**: MCP server + skill (`KIMI_SETUP.md`)
 
 ## Quick Start
 
@@ -77,6 +82,16 @@ paths:
 ```
 
 Optionally update `config/persona.yaml` with your values and decision framework.
+
+#### LLM Provider
+
+By default, agents use Anthropic Claude. To use **Moonshot AI (Kimi)** instead:
+
+```bash
+export MOONSHOT_API_KEY="your-api-key"
+```
+
+Agents will auto-detect and fall back to Moonshot when Anthropic is unavailable.
 
 ### 3. Ingest
 
