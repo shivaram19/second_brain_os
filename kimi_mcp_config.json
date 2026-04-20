@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "second-brain-os": {
+      "command": "python",
+      "args": [
+        "-m",
+        "brainos.mcp_servers.run_server"
+      ],
+      "cwd": "/Users/shivaramgoud/Developer/second_brain_os",
+      "env": {
+        "PYTHONPATH": "/Users/shivaramgoud/Developer/second_brain_os"
+      }
+    }
+  }
+}
