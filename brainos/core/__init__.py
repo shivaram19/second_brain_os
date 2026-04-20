@@ -21,6 +21,7 @@ from .models import (
     AgentResult,
 )
 from .config_loader import Config, load_config
+from .moonshot_client import MoonshotClient, get_moonshot_client
 
 __all__ = [
     "Idea",
@@ -35,4 +36,6 @@ __all__ = [
     "AgentResult",
     "Config",
     "load_config",
+    "MoonshotClient",
+    "get_moonshot_client",
 ]
