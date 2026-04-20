@@ -15,7 +15,11 @@ tone, and existing knowledge rather than generic LLM hallucinations.
 
 from typing import Any, Dict
 
-from anthropic import Anthropic
+try:
+    from anthropic import Anthropic
+    HAS_ANTHROPIC = True
+except ImportError:
+    HAS_ANTHROPIC = False
 
 from brainos.context_engineering.orchestrator import ContextOrchestrator
 from brainos.context_engineering.packing import GreedyContextPacker
@@ -35,14 +39,16 @@ from brainos.telemetry.schema import TelemetryDB
 class DraftingAgent:
     """Agent that writes content based on knowledge base."""
 
-    def __init__(self, api_key: str = None):
+    def __init__(self, api_key: str = None, provider: str = "auto"):
         """Initialize drafting agent.
 
         Args:
-            api_key: Anthropic API key
+            api_key: API key for the chosen provider
+            provider: LLM provider — 'anthropic', 'moonshot', or 'auto'
         """
-        self.client = Anthropic(api_key=api_key)
         self.config = load_config()
+        self.provider = provider
+        self.client = self._init_client(api_key)
 
         vault_path = self.config.paths.get("obsidian_vault", "~/ObsidianVault")
         vector_db_path = self.config.paths.get("vector_index_dir", "./.brainos/vector_db")
@@ -68,6 +74,46 @@ class DraftingAgent:
         )
 
         self.orchestrator = ContextOrchestrator(self.retriever, self.packer, self.persona)
+
+    def _init_client(self, api_key: str = None):
+        """Initialize LLM client based on provider."""
+        if self.provider == "auto":
+            if HAS_ANTHROPIC:
+                return Anthropic(api_key=api_key)
+            try:
+                from brainos.core.moonshot_client import MoonshotClient
+                return MoonshotClient(api_key=api_key)
+            except (ImportError, ValueError):
+                raise RuntimeError(
+                    "No LLM provider available. Install anthropic or set MOONSHOT_API_KEY."
+                )
+        elif self.provider == "anthropic":
+            if not HAS_ANTHROPIC:
+                raise RuntimeError("Anthropic package not installed.")
+            return Anthropic(api_key=api_key)
+        elif self.provider == "moonshot":
+            from brainos.core.moonshot_client import MoonshotClient
+            return MoonshotClient(api_key=api_key)
+        else:
+            raise ValueError(f"Unknown provider: {self.provider}")
+
+    def _call_llm(self, system_prompt: str, user_prompt: str, max_tokens: int = 3000):
+        """Call LLM with provider-agnostic interface."""
+        if hasattr(self.client, "messages"):
+            # Anthropic interface
+            return self.client.messages.create(
+                model="claude-3-5-sonnet-20241022",
+                max_tokens=max_tokens,
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+            )
+        else:
+            # Moonshot interface
+            return self.client.messages.create(
+                system=system_prompt,
+                messages=[{"role": "user", "content": user_prompt}],
+                max_tokens=max_tokens,
+            )
 
     def draft(
         self, topic: str, format_type: str = "essay", length: str = "medium"
@@ -120,25 +166,23 @@ Format: {format_instructions.get(format_type, 'well-structured content')}
 Use the provided context to create original, high-quality content. Cite any concepts or ideas from the knowledge base."""
 
         try:
-            response = self.client.messages.create(
-                model="claude-3-5-sonnet-20241022",
+            response = self._call_llm(
+                system_prompt,
+                f"{context_text}\n\n{user_prompt}",
                 max_tokens=3000,
-                system=system_prompt,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"{context_text}\n\n{user_prompt}",
-                    }
-                ],
             )
 
             output = response.content[0].text
+
+            input_tokens = getattr(response.usage, "input_tokens", response.usage.get("input_tokens", 0))
+            output_tokens = getattr(response.usage, "output_tokens", response.usage.get("output_tokens", 0))
+            total_tokens = input_tokens + output_tokens
 
             self.telemetry.log_event(
                 "draft",
                 query=topic,
                 num_results=len(context_slices),
-                tokens_used=response.usage.input_tokens + response.usage.output_tokens,
+                tokens_used=total_tokens,
             )
 
             return {
@@ -147,7 +191,7 @@ Use the provided context to create original, high-quality content. Cite any conc
                 "format": format_type,
                 "length": length,
                 "output": output,
-                "tokens_used": response.usage.input_tokens + response.usage.output_tokens,
+                "tokens_used": total_tokens,
                 "context_sources": len(context_slices),
             }
 
