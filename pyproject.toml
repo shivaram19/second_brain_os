@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "second-brain-os"
+version = "0.1.0"
+description = "Local-first Second Brain OS with Obsidian, MCP, and advanced context engineering"
+authors = [{name = "Shivaramgoud", email = "shivaramgoud@example.com"}]
+license = {text = "Apache-2.0"}
+requires-python = ">=3.11"
+
+dependencies = [
+    # Core
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.0.0",
+
+    # Knowledge layer
+    "obsidian>=0.1.0",  # Obsidian vault utilities
+    "networkx>=3.3",
+    "chromadb>=0.5.5",
+    "sentence-transformers>=2.2.0",  # Real embeddings
+
+    # LLM & API
+    "anthropic>=0.32.0",
+
+    # MCP
+    "mcp>=0.1.0",
+
+    # Utilities
+    "pyyaml>=6.0",
+    "python-frontmatter>=1.1.0",
+    "tqdm>=4.66.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "pytest-asyncio>=0.24.0",
+    "black>=24.0",
+    "ruff>=0.3.0",
+    "mypy>=1.8.0",
+]
+
+[project.scripts]
+brainos = "brainos.orchestration.cli:main"
+
+[tool.setuptools]
+packages = ["brainos"]
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
