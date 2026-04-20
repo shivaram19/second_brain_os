@@ -1,0 +1,29 @@
+# =============================================================================
+# Routing Configuration
+# =============================================================================
+# Defines which agent handles which type of content or task.
+# This enables automatic agent selection when processing notes from the vault
+# or when receiving tasks via MCP.
+#
+# Mapping dimensions:
+#   - idea_type_mapping: Maps note types (concept, question, project, etc.)
+#     to specialized agents (research, drafting, reflection)
+#   - platform_routing: Distinguishes internal vs. external publishing workflows
+#
+# Used by:
+#   - AgentOrchestrator: decides which agent to invoke
+#   - Ingestion pipeline: tags notes with suggested agent workflows
+# =============================================================================
+
+# Routing configuration: which agents to invoke for different idea types
+routing:
+  default_agent: "research"
+  idea_type_mapping:
+    concept: "research"
+    question: "research"
+    project: "drafting"
+    insight: "reflection"
+    principle: "research"
+  platform_routing:
+    internal: ["reflection_agent"]
+    external: ["drafting_agent", "publishing_agent"]

@@ -1,0 +1,21 @@
+# =============================================================================
+# Goals Configuration
+# =============================================================================
+# Time-horizon goals used by agents to prioritize research, drafting, and
+# reflection topics. The persona.yaml file contains the primary goals; this
+# file can be used for supplementary or dynamically updated goal tracking.
+#
+# Horizon levels:
+#   - annual: Long-term strategic objectives
+#   - quarterly: Medium-term milestones
+#   - weekly: Immediate actionable targets
+#
+# Used by:
+#   - AgentOrchestrator: routing and prioritization
+#   - ReflectionAgent: evaluating progress against stated goals
+# =============================================================================
+
+# Goals configuration
+annual: []
+quarterly: []
+weekly: []

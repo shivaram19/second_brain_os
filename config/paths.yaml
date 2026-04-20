@@ -1,0 +1,28 @@
+# =============================================================================
+# Paths Configuration
+# =============================================================================
+# Defines filesystem paths for all Second Brain OS data stores.
+# These paths are relative to the project root by default.
+#
+# Components that use these paths:
+#   - VaultAdapter: reads markdown from obsidian_vault
+#   - ChromaVectorStore: persists embeddings to vector_index_dir
+#   - TelemetryDB: writes events to telemetry_db
+#   - MCP servers: may use mcp_socket_path for IPC
+# =============================================================================
+
+paths:
+  # Obsidian vault path - update to point to your actual vault
+  obsidian_vault: "~/ObsidianVault"
+
+  # Database and index locations
+  database_dir: "./.brainos/db"
+  vector_index_dir: "./.brainos/vector_db"
+  graph_dir: "./.brainos/graph"
+
+  # Logs and telemetry
+  log_dir: "./.brainos/logs"
+  telemetry_db: "./.brainos/telemetry.db"
+
+  # MCP servers
+  mcp_socket_path: "/tmp/brainos_mcp.sock"
